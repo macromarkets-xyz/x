@@ -1,0 +1,14 @@
+import json
+import os
+
+# Create the dictionary
+data = {"prediction": 0.78}
+
+# Ensure the /tmp directory exists in the current working directory
+os.makedirs("tmp", exist_ok=True)
+
+# Write the dictionary to a JSON file in the /tmp directory
+with open("tmp/output.json", "w") as f:
+    json.dump(data, f)
+
+print("JSON file created successfully at ./tmp/output.json")

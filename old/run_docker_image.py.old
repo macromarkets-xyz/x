@@ -1,0 +1,59 @@
+import docker
+import time
+import os
+
+def run_docker_image(image_name, tag, timeout_seconds):
+    client = docker.from_env()
+
+    try:
+        # Run the container
+        container = client.containers.run(
+            f"{image_name}:{tag}",
+            detach=True,
+            volumes={os.getcwd(): {'bind': '/app', 'mode': 'rw'}}
+        )
+        #TODO: don't bind the tmp directory to the container, get the output from the container
+
+        # Wait for the container to finish or timeout
+        start_time = time.time()
+        while container.status != 'exited':
+            if time.time() - start_time > timeout_seconds:
+                print("Container execution timed out. Stopping container.")
+                container.stop()
+                container.remove()
+                return False
+            time.sleep(1)
+            container.reload()
+
+        # Check if the file exists and copy its contents
+        output_file = os.path.join(os.getcwd(), 'tmp', 'output.json')
+        if os.path.exists(output_file):
+            with open(output_file, 'r') as file:
+                content = file.read()
+            
+            # Write content to a text file
+            with open('docker_output.txt', 'w') as file:
+                file.write(content)
+            
+            print(f"Output saved to docker_output.txt")
+            container.remove()
+            return True
+        else:
+            print(f"Error: {output_file} not found.")
+            container.remove()
+            return False
+
+    except docker.errors.ImageNotFound:
+        print(f"Error: Image {image_name}:{tag} not found.")
+        return False
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return False
+
+if __name__ == "__main__":
+    success = run_docker_image('evaltest', 'v0', 120)  # 120 seconds = 2 minutes
+
+    if success:
+        print("Docker image ran successfully and output was retrieved.")
+    else:
+        print("Failed to run Docker image or retrieve output.")
