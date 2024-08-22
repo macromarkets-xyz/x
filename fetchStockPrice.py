@@ -1,26 +1,9 @@
 import json
 from datetime import datetime, timezone
-import sys
-import subprocess
 import time
 import requests
 
-def check_requests():
-    try:
-        import requests
-        return requests
-    except ImportError:
-        print("The 'requests' module is not installed. Would you like to install it now? (y/n)")
-        choice = input().lower()
-        if choice == 'y':
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "requests"])
-            import requests
-            return requests
-        else:
-            print("Cannot proceed without requests. Exiting.")
-            sys.exit(1)
-
-def fetch_stock_price(requests, ticker, api_key):
+def fetch_stock_price(ticker, api_key):
     base_url = 'https://www.alphavantage.co/query'
     function = 'GLOBAL_QUOTE'
     
@@ -36,19 +19,12 @@ def fetch_stock_price(requests, ticker, api_key):
     if 'Global Quote' in data and '05. price' in data['Global Quote']:
         return float(data['Global Quote']['05. price'])
     else:
-        print("Error fetching data or invalid response from Alpha Vantage.")
-        sys.exit(1)
+        raise ValueError("Error fetching data or invalid response from Alpha Vantage.")
 
 def calculate_percentage_difference(prediction, actual):
     return ((actual - prediction) / prediction) * 100
 
-def main(prediction_time):
-    requests = check_requests()
-
-    # Read the existing output.txt file
-    with open('output.txt', 'r') as f:
-        prediction_data = json.load(f)
-    
+def main(prediction_time, prediction_data):
     ticker = prediction_data['stock_ticker']
     prediction = prediction_data['prediction']
     
@@ -60,7 +36,11 @@ def main(prediction_time):
     
     # Fetch the stock price
     api_key = 'SRRBBG5N94HXD80A'  # Replace with your actual Alpha Vantage API key
-    actual_price = fetch_stock_price(requests, ticker, api_key)
+    try:
+        actual_price = fetch_stock_price(ticker, api_key)
+    except ValueError as e:
+        print(f"Error: {e}")
+        return
     
     # Get the current time after fetching the price
     fetch_time = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
@@ -88,7 +68,10 @@ def main(prediction_time):
     print(f"Fetch time: {fetch_time}")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python fetchStockPrice.py <prediction_time>")
+    import sys
+    if len(sys.argv) != 3:
+        print("Usage: python fetchStockPrice.py <prediction_time> <prediction_data_json>")
         sys.exit(1)
-    main(sys.argv[1])
+    prediction_time = sys.argv[1]
+    prediction_data = json.loads(sys.argv[2])
+    main(prediction_time, prediction_data)

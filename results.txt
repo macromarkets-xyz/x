@@ -1,8 +1,8 @@
 {
   "stock_ticker": "SPY",
-  "prediction_time": "2024-08-17T15:00:33.112788Z",
-  "predicted_value": 0.45702495249433994,
-  "actual_value": 554.31,
-  "fetch_time": "2024-08-17T15:00:33.945929Z",
-  "percent_difference": 121186.59430403088
+  "prediction_time": "2024-08-22T12:11:10.835324Z",
+  "predicted_value": 0.1996659738386658,
+  "actual_value": 560.62,
+  "fetch_time": "2024-08-22T12:11:11.499932Z",
+  "percent_difference": 280678.9375534724
 }

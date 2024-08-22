@@ -1,5 +1,0 @@
-{
-  "timestamp": "2024-08-17T15:00:33.112788Z",
-  "stock_ticker": "SPY",
-  "prediction": 0.45702495249433994
-}
